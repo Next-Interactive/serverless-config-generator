@@ -6,7 +6,7 @@ const robConfig = require('rob-config')
 
 const CONFIG_FILE_NAME = 'config.json'
 
-class ServerlessEnvGeneratorPlugin {
+class ServerlessConfigGeneratorPlugin {
   constructor(serverless, options) {
     this.serverless = serverless
     this.options = options || {}
@@ -29,8 +29,12 @@ class ServerlessEnvGeneratorPlugin {
       'config-show:show': this.envCommand.bind(this),
       'before:deploy:function:packageFunction': this.writeConfigFile.bind(this),
       'after:deploy:function:packageFunction': this.removeConfigFile.bind(this),
-      'before:deploy:createDeploymentArtifacts': this.writeConfigFile.bind(this),
-      'after:deploy:createDeploymentArtifacts': this.removeConfigFile.bind(this),
+      'before:deploy:createDeploymentArtifacts': this.writeConfigFile.bind(
+        this
+      ),
+      'after:deploy:createDeploymentArtifacts': this.removeConfigFile.bind(
+        this
+      ),
       'before:invoke:local:invoke': this.writeConfigFile.bind(this),
       'after:invoke:local:invoke': this.removeConfigFile.bind(this),
       'offline:start:init': this.writeConfigFile.bind(this),
@@ -90,4 +94,4 @@ class ServerlessEnvGeneratorPlugin {
   }
 }
 
-module.exports = ServerlessEnvGeneratorPlugin
+module.exports = ServerlessConfigGeneratorPlugin
