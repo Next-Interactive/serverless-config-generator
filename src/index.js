@@ -4,7 +4,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const robConfig = require('rob-config')
 
-const CONFIG_FILE_NAME = 'config.json'
+const CONFIG_FILE_NAME = 'config.js'
 
 class ServerlessConfigGeneratorPlugin {
   constructor(serverless, options) {
@@ -53,11 +53,32 @@ class ServerlessConfigGeneratorPlugin {
     console.log(envVars)
   }
 
+  addEnvOverride(config, path, startPath = 'process.env.') {
+    for (let property in config) {
+      if (typeof config[property] === 'object') {
+        const formattedPath =
+          path === startPath
+            ? `${path}${property.toUpperCase()}`
+            : `${path}_${property.toUpperCase()}`
+        this.addEnvOverride(config[property], formattedPath)
+      } else {
+        const value =
+          typeof config[property] === 'string'
+            ? `'${config[property]}'`
+            : config[property]
+        config[property] = `${path}_${property.toUpperCase()} || ${value}`
+      }
+    }
+    return config
+  }
+
   writeConfigFile() {
     const config = this.getConfig()
     this.serverless.cli.log('Creating config file...')
-    const envVars = this.getEnvVars(config)
-    return fs.writeFile(config.configPath, JSON.stringify(envVars))
+    const configVars = this.getEnvVars(config)
+    const formattedConfigVars = this.addEnvOverride(configVars, 'process.env.')
+    const values = JSON.stringify(formattedConfigVars).replace(/["]+/g, '')
+    return fs.writeFile(config.configPath, `module.exports = ${values}`)
   }
 
   removeConfigFile() {
