@@ -71,7 +71,7 @@ class ServerlessConfigGeneratorPlugin {
         const prefix = path !== undefined ? `${path}_` : ''
         config[
           property
-        ] = `${prefix}${property.toUpperCase()} || process.env.hasOwnProperty(${property.toUpperCase()}) ? undefined : ${value}`
+        ] = `${prefix}${property.toUpperCase()} || process.env.hasOwnProperty('${property.toUpperCase()}') ? undefined : ${value}`
       }
     }
     return config
