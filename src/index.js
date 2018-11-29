@@ -55,6 +55,9 @@ class ServerlessConfigGeneratorPlugin {
 
   addEnvOverride(config, path, startPath = 'process.env.') {
     for (let property in config) {
+      if (property.startsWith('_')) {
+        property = property.replace('_', '')
+      }
       if (typeof config[property] === 'object') {
         const formattedPath =
           path === startPath
