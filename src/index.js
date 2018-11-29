@@ -59,14 +59,18 @@ class ServerlessConfigGeneratorPlugin {
         const formattedPath =
           path === startPath
             ? `${path}${property.toUpperCase()}`
-            : `${path}_${property.toUpperCase()}`
+            : path !== ''
+            ? `${path}_${property.toUpperCase()}`
+            : property.toUpperCase()
         this.addEnvOverride(config[property], formattedPath)
       } else {
         const value =
           typeof config[property] === 'string'
             ? `'${config[property]}'`
             : config[property]
-        config[property] = `${path}_${property.toUpperCase()} || ${value}`
+        config[
+          property
+        ] = `${path}_${property.toUpperCase()} || typeof ${path}_${property.toUpperCase()} === 'undefined' ? ${value} : undefined`
       }
     }
     return config
