@@ -73,7 +73,7 @@ class ServerlessConfigGeneratorPlugin {
         const propertyName = finalPath.replace(startPath, '')
         config[
           property
-        ] = `${finalPath} || process.env.hasOwnProperty('${propertyName}') ? undefined : ${value}`
+        ] = `process.env.hasOwnProperty('${propertyName}') ? ${finalPath} : ${value}`
       }
     }
     return config
