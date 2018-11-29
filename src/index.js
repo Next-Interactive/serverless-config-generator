@@ -68,9 +68,10 @@ class ServerlessConfigGeneratorPlugin {
           typeof config[property] === 'string'
             ? `'${config[property]}'`
             : config[property]
+        const prefix = path !== undefined ? `${path}_` : ''
         config[
           property
-        ] = `${path}_${property.toUpperCase()} || typeof ${path}_${property.toUpperCase()} === 'undefined' ? ${value} : undefined`
+        ] = `${prefix}${property.toUpperCase()} || process.env.hasOwnProperty(${property.toUpperCase()}) ? undefined : ${value}`
       }
     }
     return config
