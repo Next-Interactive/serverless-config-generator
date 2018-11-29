@@ -66,14 +66,11 @@ class ServerlessConfigGeneratorPlugin {
           typeof config[property] === 'string'
             ? `'${config[property]}'`
             : config[property]
-        const propertyName = `${path}_${property.toUpperCase()}`.replace(
-          startPath,
-          ''
-        )
         const finalPath =
           path === startPath
             ? `${path}${property.toUpperCase()}`
             : `${path}_${property.toUpperCase()}`
+        const propertyName = finalPath.replace(startPath, '')
         config[
           property
         ] = `${finalPath} || process.env.hasOwnProperty('${propertyName}') ? undefined : ${value}`
