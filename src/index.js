@@ -55,9 +55,6 @@ class ServerlessConfigGeneratorPlugin {
 
   addEnvOverride(config, path, startPath = 'process.env.') {
     for (let property in config) {
-      if (property.startsWith('_')) {
-        property = property.replace('_', '')
-      }
       if (typeof config[property] === 'object') {
         const formattedPath =
           path === startPath
@@ -73,9 +70,13 @@ class ServerlessConfigGeneratorPlugin {
           startPath,
           ''
         )
+        const finalPath =
+          path === startPath
+            ? `${path}${property.toUpperCase()}`
+            : `${path}_${property.toUpperCase()}`
         config[
           property
-        ] = `${path}_${property.toUpperCase()} || process.env.hasOwnProperty('${propertyName}') ? undefined : ${value}`
+        ] = `${finalPath} || process.env.hasOwnProperty('${propertyName}') ? undefined : ${value}`
       }
     }
     return config
