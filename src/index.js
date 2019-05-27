@@ -36,7 +36,6 @@ class ServerlessConfigGeneratorPlugin {
         this
       ),
       'before:invoke:local:invoke': this.writeConfigFile.bind(this),
-      'after:invoke:local:invoke': this.removeConfigFile.bind(this),
       'offline:start:init': this.writeConfigFile.bind(this),
       'offline:start:end': this.removeConfigFile.bind(this),
       'config-validate:validate': this.configValidate.bind(this)
