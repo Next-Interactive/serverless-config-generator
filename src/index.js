@@ -29,10 +29,10 @@ class ServerlessConfigGeneratorPlugin {
       'config-show:show': this.envCommand.bind(this),
       'before:deploy:function:packageFunction': this.writeConfigFile.bind(this),
       'after:deploy:function:packageFunction': this.removeConfigFile.bind(this),
-      'before:deploy:createDeploymentArtifacts': this.writeConfigFile.bind(
+      'package:createDeploymentArtifacts': this.writeConfigFile.bind(
         this
       ),
-      'after:deploy:createDeploymentArtifacts': this.removeConfigFile.bind(
+      'package:createDeploymentArtifacts': this.removeConfigFile.bind(
         this
       ),
       'before:invoke:local:invoke': this.writeConfigFile.bind(this),
