@@ -47,8 +47,10 @@ class ServerlessConfigGeneratorPlugin {
     const envVars = this.getEnvVars(config)
     if (this.options.value) {
       console.log(envVars[this.options.value])
+
       return
     }
+
     console.log(envVars)
   }
 
@@ -75,6 +77,7 @@ class ServerlessConfigGeneratorPlugin {
         ] = `process.env.hasOwnProperty('${propertyName}') ? ${finalPath} : ${value}`
       }
     }
+
     return config
   }
 
@@ -84,11 +87,13 @@ class ServerlessConfigGeneratorPlugin {
     const configVars = this.getEnvVars(config)
     const formattedConfigVars = this.addEnvOverride(configVars, 'process.env.')
     const values = JSON.stringify(formattedConfigVars).replace(/["]+/g, '')
+
     return fs.writeFile(config.configPath, `module.exports = ${values}`)
   }
 
   removeConfigFile() {
     const config = this.getConfig()
+
     return fs.remove(config.configPath).then(_ => {
       this.serverless.cli.log('Removed config file')
     })
@@ -101,6 +106,7 @@ class ServerlessConfigGeneratorPlugin {
 
   getConfig() {
     const { config, processedInput, service } = this.serverless
+
     if (!this.config) {
       const servicePath = config.servicePath || '/'
       const stage = processedInput.options.stage || service.provider.stage
@@ -111,13 +117,16 @@ class ServerlessConfigGeneratorPlugin {
         configPath: path.join(servicePath, CONFIG_FILE_NAME)
       }
     }
+
     return this.config
   }
 
   getEnvVars(config) {
     robConfig.validate()
-    const result = robConfig.get(config.envWorkspace)
-    return result
+
+    return config.envWorkspace
+      ? robConfig.get(config.envWorkspace)
+      : robConfig.getProperties()
   }
 }
 
