@@ -31,14 +31,8 @@ const buildConfigGenerator = (serverless, options) =>
   new ConfigGenerator(serverless, options)
 
 describe('index.js', () => {
-  let sandbox
-
-  beforeEach(() => {
-    sandbox = sinon.sandbox.create()
-  })
-
   afterEach(done => {
-    sandbox.restore()
+    sinon.restore()
     done()
   })
 
@@ -53,7 +47,7 @@ describe('index.js', () => {
     const serverless = buildServerless('myService')
     const configGenerator = buildConfigGenerator(serverless)
 
-    sandbox.stub(configGenerator, 'getEnvVars').callsFake(config => {
+    sinon.stub(configGenerator, 'getEnvVars').callsFake(config => {
       expect(config.region).to.equal('eu-central-1')
       expect(config.stage).to.equal('dev')
       expect(config.envWorkspace).to.equal('myService')
