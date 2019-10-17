@@ -1,5 +1,6 @@
 const expect = require('chai').expect
 const sinon = require('sinon')
+const fs = require('fs-extra')
 const Serverless = require('serverless/lib/Serverless')
 const AwsProvider = require('serverless/lib/plugins/aws/provider/awsProvider')
 const ConfigGenerator = require('../src')
@@ -11,6 +12,36 @@ const configResult = {
   },
   myOtherService: {
     identity: 'John'
+  }
+}
+
+const configSchema = {
+  properties: {
+    myService: {
+      properties: {
+        port: {
+          doc: 'The API port',
+          format: 'port',
+          default: 3000,
+          env: 'API_PORT'
+        },
+        public_url: {
+          doc: 'The public url',
+          format: 'url',
+          default: 'http://localhost',
+          env: 'PUBLIC_URL'
+        }
+      }
+    },
+    myOtherService: {
+      properties: {
+        identity: {
+          doc: 'The identity name',
+          format: 'string',
+          default: 'John'
+        }
+      }
+    }
   }
 }
 
@@ -92,5 +123,56 @@ describe('index.js', () => {
 
     expect(robConfig).to.not.be.null
     expect(robConfig).to.deep.equal(configResult)
+  })
+
+  it('should add env var check', () => {
+    const serverless = buildServerless()
+    const configGenerator = buildConfigGenerator(serverless)
+
+    const config = configGenerator.getConfig()
+    const configVars = configGenerator.getEnvVars(config)
+
+    const configWithEnvOverride = configGenerator.addEnvOverride(
+      configVars,
+      configSchema
+    )
+
+    expect(configWithEnvOverride).to.eql({
+      myService: {
+        port:
+          "process.env.hasOwnProperty('API_PORT') ? process.env.API_PORT : 3123",
+        public_url:
+          "process.env.hasOwnProperty('PUBLIC_URL') ? process.env.PUBLIC_URL : 'http://localhost:8080'"
+      },
+      myOtherService: { identity: "'John'" }
+    })
+  })
+
+  it('should write valid config file without envWorkspace', () => {
+    sinon.stub(fs, 'writeFile').callsFake((path, content) => {
+      expect(content).to.equal(
+        "module.exports = {myService:{port:process.env.hasOwnProperty('API_PORT') ? process.env.API_PORT : 3123,public_url:process.env.hasOwnProperty('PUBLIC_URL') ? process.env.PUBLIC_URL : 'http://localhost:8080'},myOtherService:{identity:'John'}}"
+      )
+    })
+    sinon.stub(console, 'log').callsFake(() => {})
+
+    const serverless = buildServerless()
+    const configGenerator = buildConfigGenerator(serverless)
+
+    configGenerator.writeConfigFile()
+  })
+
+  it('should write valid config file with envWorkspace', () => {
+    sinon.stub(fs, 'writeFile').callsFake((path, content) => {
+      expect(content).to.equal(
+        "module.exports = {port:process.env.hasOwnProperty('API_PORT') ? process.env.API_PORT : 3123,public_url:process.env.hasOwnProperty('PUBLIC_URL') ? process.env.PUBLIC_URL : 'http://localhost:8080'}"
+      )
+    })
+    sinon.stub(console, 'log').callsFake(() => {})
+
+    const serverless = buildServerless('myService')
+    const configGenerator = buildConfigGenerator(serverless)
+
+    configGenerator.writeConfigFile()
   })
 })

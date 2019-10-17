@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "fs-extra": "~8.1.0",
+    "lodash.get": "~4.4.2",
     "rob-config": "~4.2.0"
   },
   "devDependencies": {

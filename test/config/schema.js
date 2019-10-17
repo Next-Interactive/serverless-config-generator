@@ -3,12 +3,14 @@ module.exports = {
     port: {
       doc: 'The API port',
       format: 'port',
-      default: 3000
+      default: 3000,
+      env: 'API_PORT'
     },
     public_url: {
       doc: 'The public url',
       format: 'url',
-      default: `http://localhost`
+      default: 'http://localhost',
+      env: 'PUBLIC_URL'
     }
   },
   myOtherService: {
