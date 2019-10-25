@@ -3,6 +3,7 @@
 const fs = require('fs-extra')
 const path = require('path')
 const robConfig = require('rob-config')
+const _get = require('lodash.get')
 
 const CONFIG_FILE_NAME = 'config.js'
 
@@ -54,27 +55,26 @@ class ServerlessConfigGeneratorPlugin {
     console.log(envVars)
   }
 
-  addEnvOverride(config, path, startPath = 'process.env.') {
+  addEnvOverride(config, schema, schemaKey = 'properties') {
     for (let property in config) {
       if (typeof config[property] === 'object') {
-        const formattedPath =
-          path === startPath
-            ? `${path}${property.toUpperCase()}`
-            : `${path}_${property.toUpperCase()}`
-        this.addEnvOverride(config[property], formattedPath)
+        this.addEnvOverride(
+          config[property],
+          schema,
+          schemaKey + '.' + property + '.properties'
+        )
       } else {
         const value =
           typeof config[property] === 'string'
             ? `'${config[property]}'`
             : config[property]
-        const finalPath =
-          path === startPath
-            ? `${path}${property.toUpperCase()}`
-            : `${path}_${property.toUpperCase()}`
-        const propertyName = finalPath.replace(startPath, '')
-        config[
-          property
-        ] = `process.env.hasOwnProperty('${propertyName}') ? ${finalPath} : ${value}`
+        const specifiedEnvVarName = _get(
+          schema,
+          schemaKey + '.' + property + '.env'
+        )
+        config[property] = specifiedEnvVarName
+          ? `process.env.hasOwnProperty('${specifiedEnvVarName}') ? process.env.${specifiedEnvVarName} : ${value}`
+          : value
       }
     }
 
@@ -85,7 +85,19 @@ class ServerlessConfigGeneratorPlugin {
     const config = this.getConfig()
     this.serverless.cli.log('Creating config file...')
     const configVars = this.getEnvVars(config)
-    const formattedConfigVars = this.addEnvOverride(configVars, 'process.env.')
+    const schemaKey = config.envWorkspace
+      ? 'properties.' +
+        config.envWorkspace
+          .split('.')
+          .map(v => v + '.properties')
+          .join('.')
+      : 'properties'
+
+    const formattedConfigVars = this.addEnvOverride(
+      configVars,
+      this.getSchema(),
+      schemaKey
+    )
     const values = JSON.stringify(formattedConfigVars).replace(/["]+/g, '')
 
     return fs.writeFile(config.configPath, `module.exports = ${values}`)
@@ -127,6 +139,10 @@ class ServerlessConfigGeneratorPlugin {
     return config.envWorkspace
       ? robConfig.get(config.envWorkspace)
       : robConfig.getProperties()
+  }
+
+  getSchema() {
+    return robConfig.getSchema()
   }
 }
 
